@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeechBuddy - Learn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: linear-gradient(135deg, #19121c 0%, #2a1e30 100%);
+            color: #ffc46b;
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .nav-bar {
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(25, 18, 28, 0.8);
+        }
+        .nav-bar h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 24px;
+            text-shadow: 2px 2px 0 #c00788;
+        }
+        .nav-bar a {
+            color: #4d709d;
+            text-decoration: none;
+            font-size: 16px;
+            margin-left: 20px;
+            transition: color 0.3s;
+        }
+        .nav-bar a:hover {
+            color: #c00788;
+        }
+        .nav-bar button {
+            background: none;
+            border: none;
+            color: #4d709d;
+            font-size: 16px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .nav-bar button:hover {
+            color: #c00788;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+            width: 100%;
+        }
+        .word-card {
+            background: rgba(29, 22, 35, 0.9);
+            border: 3px solid #c00788;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(199, 7, 136, 0.5);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        .word {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 0 #4d709d;
+            animation: fadeIn 0.5s ease-in;
+        }
+        .progress-bar {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .progress-dot {
+            width: 15px;
+            height: 15px;
+            background: #4d709d;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+        .progress-dot.active {
+            background: #f75583;
+            box-shadow: 0 0 10px #f75583;
+        }
+        button {
+            background: #f75583;
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-family: 'Poppins', sans-serif;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+            margin: 10px;
+        }
+        button:hover {
+            transform: scale(1.05);
+            background: #c00788;
+        }
+        button:disabled {
+            background: #4d709d;
+            cursor: not-allowed;
+        }
+        button:focus {
+            outline: 3px solid #c00788;
+            outline-offset: 2px;
+        }
+        .recording-indicator {
+            font-size: 24px;
+            color: #f75583;
+            margin: 10px 0;
+            display: none;
+        }
+        .recording-indicator.recording {
+            display: block;
+            animation: pulse 1.5s infinite;
+        }
+        .feedback {
+            font-size: 24px;
+            margin: 20px 0;
+            opacity: 0;
+            transition: opacity 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(25, 18, 28, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .feedback.show {
+            opacity: 1;
+        }
+        .feedback.correct {
+            color: #ffc46b;
+            animation: bounce 0.5s;
+        }
+        .feedback.incorrect {
+            color: #f75583;
+        }
+        .streak {
+            font-size: 20px;
+            color: #4d709d;
+            margin-top: 10px;
+        }
+        .summary-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(25, 18, 28, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .summary-content {
+            background: linear-gradient(135deg, #2a1e30 0%, #19121c 100%);
+            border: 3px solid #c00788;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 700px;
+            width: 90%;
+            text-align: left;
+            color: #ffc46b;
+            font-size: 18px;
+            line-height: 1.6;
+            box-shadow: 0 0 30px rgba(199, 7, 136, 0.5);
+        }
+        .summary-content h2 {
+            font-family: 'Press Start 2P', cursive;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 #4d709d;
+        }
+        .summary-content button {
+            display: block;
+            margin: 20px auto 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-bar">
+        <h1>SpeechBuddy</h1>
+        <div>
+            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
+            <button id="replayNavButton" onclick="replayAudio()" style="display: none;" aria-label="Replay word audio">
+                <i class="fas fa-volume-up"></i> Replay
+            </button>
+        </div>
+    </div>
+    <div class="container" role="main">
+        <div class="word-card">
+            <div class="word" id="wordDisplay" aria-live="polite">Press Start!</div>
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+            </div>
+            <button id="startButton" onclick="startPractice()" aria-label="Start practice session">Start Practice</button>
+            <button id="nextButton" onclick="nextWord()" style="display: none;" aria-label="Go to next word">Next Word</button>
+            <div class="recording-indicator recording" id="recordingIndicator"><i class="fas fa-microphone"></i></div>
+            <div class="feedback" id="feedbackDisplay" aria-live="assertive"></div>
+            <div class="streak" id="streakDisplay">Streak: 0</div>
+        </div>
+    </div>
+    <div class="summary-overlay" id="summaryOverlay">
+        <div class="summary-content">
+            <h2>Session Complete!</h2>
+            <div id="summaryDisplay"></div>
+            <button onclick="startNewSession()" aria-label="Start a new session">Play Again</button>
+        </div>
+    </div>
+
+    <audio id="wordAudio" src=""></audio>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        let currentWord = "";
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = sendAudio;
+            })
+            .catch(err => console.error("Microphone access denied:", err));
+
+        function startPractice() {
+            document.getElementById('startButton').disabled = true;
+            document.getElementById('replayNavButton').style.display = 'none';
+            document.getElementById('nextButton').style.display = 'none';
+            document.getElementById('feedbackDisplay').classList.remove('show', 'correct', 'incorrect');
+            document.getElementById('summaryOverlay').style.display = 'none';
+            document.getElementById('recordingIndicator').classList.remove('recording');
+            updateProgressBar(0);
+            fetch('/practice')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.done) {
+                        showSummary(data.results, data.streak);
+                        return;
+                    }
+                    currentWord = data.word;
+                    document.getElementById('wordDisplay').innerText = currentWord;
+                    updateProgressBar(data.index);
+                    const audio = document.getElementById('wordAudio');
+                    audio.src = `/static/current_word.mp3?t=${new Date().getTime()}`;
+                    audio.play();
+                    document.getElementById('replayNavButton').style.display = 'block';
+                    audio.onended = () => setTimeout(startRecording, 1000);
+                });
+        }
+
+        function replayAudio() {
+            const audio = document.getElementById('wordAudio');
+            audio.play();
+        }
+
+        function startRecording() {
+            if (isRecording || !mediaRecorder) return;
+            isRecording = true;
+            audioChunks = [];
+            mediaRecorder.start();
+            document.getElementById('recordingIndicator').classList.add('recording');
+            setTimeout(() => {
+                if (isRecording) {
+                    mediaRecorder.stop();
+                    isRecording = false;
+                    document.getElementById('recordingIndicator').classList.remove('recording');
+                }
+            }, 5000);
+        }
+
+        function sendAudio() {
+            isRecording = false;
+            document.getElementById('recordingIndicator').classList.remove('recording');
+            const blob = new Blob(audioChunks, { type: 'audio/wav' });
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => {
+                const base64Audio = reader.result;
+                fetch('/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ audio: base64Audio })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert('Error: ' + data.error);
+                            return;
+                        }
+                        const feedback = data.correct ? `Correct! <i class="fas fa-check-circle"></i>` : `Try again! You said: "${data.spoken}" <i class="fas fa-times-circle"></i>`;
+                        const feedbackDiv = document.getElementById('feedbackDisplay');
+                        feedbackDiv.innerHTML = feedback;
+                        feedbackDiv.classList.add('show', data.correct ? 'correct' : 'incorrect');
+                        document.getElementById('streakDisplay').innerText = `Streak: ${data.streak}`;
+                        document.getElementById('nextButton').style.display = 'inline-block';
+                    });
+            };
+        }
+
+        function nextWord() {
+            document.getElementById('nextButton').style.display = 'none';
+            startPractice();
+        }
+
+        function updateProgressBar(index) {
+            const dots = document.querySelectorAll('.progress-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i < index);
+            });
+        }
+
+        function showSummary(results, streak) {
+            let summary = '';
+            results.forEach((result, i) => {
+                summary += `${i + 1}. Word: ${result.word}, You said: "${result.spoken}", ${result.correct ? 'Correct ✅' : 'Incorrect ❌'}<br>`;
+            });
+            summary += `<br><strong>Final Streak: ${streak}</strong>`;
+            document.getElementById('summaryDisplay').innerHTML = summary;
+            document.getElementById('wordDisplay').innerText = 'Well Done!';
+            document.getElementById('summaryOverlay').style.display = 'flex';
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+            document.getElementById('startButton').innerText = 'Start New Session';
+            document.getElementById('startButton').disabled = false;
+            fetch('/reset', { method: 'POST' });
+        }
+
+        function startNewSession() {
+            document.getElementById('summaryOverlay').style.display = 'none';
+            startPractice();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                if (!document.getElementById('startButton').disabled) {
+                    startPractice();
+                } else if (document.getElementById('nextButton').style.display !== 'none') {
+                    nextWord();
+                } else if (document.getElementById('summaryOverlay').style.display === 'flex') {
+                    startNewSession();
+                }
+            } else if (e.key === ' ') {
+                if (document.getElementById('replayNavButton').style.display !== 'none') {
+                    replayAudio();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
