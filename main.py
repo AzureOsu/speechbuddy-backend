@@ -2,8 +2,8 @@ import json
 import random
 
 def evaluate_pronunciation(target_word, spoken_word, groq_client):
-    prompt = f"""
-    fThe child was supposed to say: "{target_word}"
+    prompt =
+    f"The child was supposed to say: "{target_word}"
     f'They said: "{spoken_word}"'
     f'Considering that the kid has speech delay and accrediting error to the speech recognition software would you consider the input close enough to the actual word to allow the kid to pass this word, if yes respond with: Congrats youre correct, if wrong then say: Sorry you arent right; keep response brief'
     
