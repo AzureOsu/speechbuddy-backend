@@ -9,7 +9,7 @@ from gtts import gTTS
 from main import evaluate_pronunciation, load_word_list, save_word_list, generate_therapy_words
 
 app = Flask(__name__)
-CORS(app)  # Allow all origins (simplified CORS)
+CORS(app)  # Allow all origins
 
 # Initialize Groq client
 groq = Groq(api_key="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")
@@ -96,7 +96,7 @@ def submit():
         if os.path.exists(temp_audio_path):
             os.remove(temp_audio_path)
 
-    result = evaluate_pronunciation(current_word, spoken)
+    result = evaluate_pronunciation(current_word, spoken, groq)  # Pass the groq client
     correct = "pass" in result.lower()
 
     if correct:
@@ -155,3 +155,5 @@ def static_file(path):
 if __name__ == '__main__':
     if not os.path.exists('static'):
         os.makedirs('static')
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
