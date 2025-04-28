@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, jsonify, send_from_directory
-from flask_cors import CORS
 import os
 from groq import Groq
 import base64
@@ -9,7 +8,6 @@ from gtts import gTTS
 from main import evaluate_pronunciation, load_word_list, save_word_list, generate_therapy_words
 
 app = Flask(__name__)
-CORS(app)  # Allow all origins
 
 # Initialize Groq client
 groq = Groq(api_key="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")
@@ -32,24 +30,27 @@ session_results = []  # Track correct/incorrect for summary
 
 @app.route('/')
 def index():
-    return jsonify({"message": "SpeechBuddy Backend API"})
+    return render_template('index.html')
 
 @app.route('/dashboard')
 def dashboard():
-    # Calculate stats for the dashboard
-    total_attempts = len(correct_words) + len(incorrect_words)
-    accuracy = (len(correct_words) / total_attempts * 100) if total_attempts > 0 else 0
-    return jsonify({
-        'total_attempts': total_attempts,
-        'correct_count': len(correct_words),
-        'incorrect_count': len(incorrect_words),
-        'accuracy': accuracy,
-        'best_streak': max(session_results, key=lambda x: x['streak'])['streak'] if session_results else 0
-    })
+    # Check if the request expects JSON (API call from frontend)
+    if request.headers.get('Accept') == 'application/json':
+        total_attempts = len(correct_words) + len(incorrect_words)
+        accuracy = (len(correct_words) / total_attempts * 100) if total_attempts > 0 else 0
+        return jsonify({
+            'total_attempts': total_attempts,
+            'correct_count': len(correct_words),
+            'incorrect_count': len(incorrect_words),
+            'accuracy': accuracy,
+            'best_streak': max(session_results, key=lambda x: x['streak'])['streak'] if session_results else 0
+        })
+    # Otherwise, render the dashboard HTML
+    return render_template('dashboard.html')
 
 @app.route('/app')
 def learning_app():
-    return jsonify({"message": "Learning app endpoint"})
+    return render_template('app.html')
 
 @app.route('/practice', methods=['GET'])
 def practice():
