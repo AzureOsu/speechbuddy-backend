@@ -1,5 +1,8 @@
 import json
 import random
+from groq import Groq
+
+groq = Groq(api_key="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")
 
 def load_word_list(filename):
     try:
@@ -15,12 +18,7 @@ def save_word_list(filename, word_list):
 def evaluate_pronunciation(target, spoken):
     target = target.lower().strip()
     spoken = spoken.lower().strip()
-    if spoken == target:
-        return "Pass: Perfect match!"
-    # Simplified evaluation for speech delays
-    if len(target) == len(spoken) and sum(a != b for a, b in zip(target, spoken)) <= 1:
-        return "Pass: Close enough!"
-    return f"Fail: Expected '{target}', got '{spoken}'"
+    
 
 def generate_therapy_words(correct_words, incorrect_words):
     # Sample word lists (simplified)
