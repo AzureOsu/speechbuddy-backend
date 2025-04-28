@@ -1,16 +1,19 @@
 import json
 import random
-from groq import Groq
 
-# Initialize Groq client
-groq = Groq(api_key="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")
-
-def evaluate_pronunciation(target, spoken):
-    target = target.lower().strip()
-    spoken = spoken.lower().strip()
-    if target == spoken:
-        return "pass"
-    return "fail"
+def evaluate_pronunciation(target_word, spoken_word, groq_client):
+    prompt = f"""
+    fThe child was supposed to say: "{target_word}"
+    f'They said: "{spoken_word}"'
+    f'Considering that the kid has speech delay and accrediting error to the speech recognition software would you consider the input close enough to the actual word to allow the kid to pass this word, if yes respond with: Congrats youre correct, if wrong then say: Sorry you arent right; keep response brief'
+    
+    response = groq_client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    result = response.choices[0].message.content.strip().lower()
+    # Parse the response to return "pass" or "fail" as expected by app.py
+    return "pass" if "congrats" in result else "fail"
 
 def load_word_list(filename):
     try:
