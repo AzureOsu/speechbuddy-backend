@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask_cors import CORS
 import os
 from groq import Groq
 import base64
@@ -8,6 +9,7 @@ from gtts import gTTS
 from main import evaluate_pronunciation, load_word_list, save_word_list, generate_therapy_words
 
 app = Flask(__name__)
+CORS(app)  # Allow all origins (simplified CORS)
 
 # Initialize Groq client
 groq = Groq(api_key="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")
@@ -28,30 +30,26 @@ session_index = 0
 streak = 0
 session_results = []  # Track correct/incorrect for summary
 
-
 @app.route('/')
 def index():
-    return render_template('index.html')
-
+    return jsonify({"message": "SpeechBuddy Backend API"})
 
 @app.route('/dashboard')
 def dashboard():
     # Calculate stats for the dashboard
     total_attempts = len(correct_words) + len(incorrect_words)
     accuracy = (len(correct_words) / total_attempts * 100) if total_attempts > 0 else 0
-    return render_template('dashboard.html',
-                           total_attempts=total_attempts,
-                           correct_count=len(correct_words),
-                           incorrect_count=len(incorrect_words),
-                           accuracy=accuracy,
-                           best_streak=max(session_results, key=lambda x: x['streak'])[
-                               'streak'] if session_results else 0)
-
+    return jsonify({
+        'total_attempts': total_attempts,
+        'correct_count': len(correct_words),
+        'incorrect_count': len(incorrect_words),
+        'accuracy': accuracy,
+        'best_streak': max(session_results, key=lambda x: x['streak'])['streak'] if session_results else 0
+    })
 
 @app.route('/app')
 def learning_app():
-    return render_template('app.html')
-
+    return jsonify({"message": "Learning app endpoint"})
 
 @app.route('/practice', methods=['GET'])
 def practice():
@@ -62,7 +60,7 @@ def practice():
             'results': session_results,
             'streak': streak
         })
-
+    
     current_word = session_words[session_index]
     session_index += 1
 
@@ -70,7 +68,6 @@ def practice():
     tts.save('static/current_word.mp3')
 
     return jsonify({'word': current_word, 'index': session_index})
-
 
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -128,7 +125,6 @@ def submit():
         'result': result
     })
 
-
 @app.route('/reset', methods=['POST'])
 def reset():
     global session_words, session_index, streak, session_results, correct_words, incorrect_words
@@ -139,14 +135,23 @@ def reset():
     session_results = []
     return jsonify({'status': 'reset'})
 
+@app.route('/reset-stats', methods=['POST'])
+def reset_stats():
+    global correct_words, incorrect_words, session_results, streak
+    # Clear the stats
+    correct_words = []
+    incorrect_words = []
+    session_results = []
+    streak = 0
+    # Save the cleared stats to files
+    save_word_list(CORRECT_WORDS_FILE, correct_words)
+    save_word_list(INCORRECT_WORDS_FILE, incorrect_words)
+    return jsonify({'status': 'stats_reset'})
 
 @app.route('/static/<path:path>')
 def static_file(path):
     return send_from_directory('static', path)
 
-
 if __name__ == '__main__':
     if not os.path.exists('static'):
-        os.makedirs('static')
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+        os.makedirs('static
